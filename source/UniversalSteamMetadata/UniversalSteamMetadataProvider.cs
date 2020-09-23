@@ -247,10 +247,7 @@ namespace UniversalSteamMetadata
                 if (BuiltinExtensions.GetExtensionFromId(options.GameData.PluginId) == BuiltinExtension.SteamLibrary)
                 {
                     var appId = uint.Parse(options.GameData.GameId);
-                    currentMetadata = metadataProvider.GetGameMetadata(
-                        appId,
-                        plugin.Settings.BackgroundSource,
-                        plugin.Settings.DownloadVerticalCovers);
+                    currentMetadata = metadataProvider.GetGameMetadata(appId, plugin.Settings);
                 }
                 else
                 {
@@ -259,10 +256,7 @@ namespace UniversalSteamMetadata
                         var matchedId = GetMatchingGame(options.GameData);
                         if (matchedId > 0)
                         {
-                            currentMetadata = metadataProvider.GetGameMetadata(
-                                matchedId,
-                                plugin.Settings.BackgroundSource,
-                                plugin.Settings.DownloadVerticalCovers);
+                            currentMetadata = metadataProvider.GetGameMetadata(matchedId, plugin.Settings);
                         }
                         else
                         {
@@ -311,10 +305,8 @@ namespace UniversalSteamMetadata
                         }
                         else
                         {
-                            currentMetadata = metadataProvider.GetGameMetadata(
-                                ((StoreSearchResult)selectedGame).GameId,
-                                plugin.Settings.BackgroundSource,
-                                plugin.Settings.DownloadVerticalCovers);
+                            currentMetadata =
+                                metadataProvider.GetGameMetadata(((StoreSearchResult) selectedGame).GameId, plugin.Settings);
                         }
                     }
                 }

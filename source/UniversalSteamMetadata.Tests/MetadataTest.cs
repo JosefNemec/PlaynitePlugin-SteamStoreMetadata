@@ -15,7 +15,8 @@ namespace UniversalSteamMetadata.Tests
         public void StandardDownloadTest()
         {
             var provider = new MetadataProvider(new SteamApiClient());
-            var data = provider.GetGameMetadata(578080, BackgroundSource.Image, true);
+            var data = provider.GetGameMetadata(578080,
+                new UniversalSteamMetadataSettings{BackgroundSource = BackgroundSource.Image, DownloadVerticalCovers = true});
             Assert.IsNotNull(data.GameInfo);
             Assert.IsNotNull(data.Icon);
             Assert.IsNotNull(data.CoverImage);
@@ -34,7 +35,8 @@ namespace UniversalSteamMetadata.Tests
         public void VRMetadataTest()
         {
             var provider = new MetadataProvider(new SteamApiClient());
-            var data = provider.GetGameMetadata(378860, BackgroundSource.Banner, true);
+            var data = provider.GetGameMetadata(378860,
+                new UniversalSteamMetadataSettings { BackgroundSource = BackgroundSource.Banner, DownloadVerticalCovers = true });
             Assert.IsTrue(data.GameInfo.Features.Contains("VR"));
         }
     }

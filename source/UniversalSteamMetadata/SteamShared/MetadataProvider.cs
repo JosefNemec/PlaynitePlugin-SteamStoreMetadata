@@ -25,6 +25,52 @@ namespace Steam
         Banner
     }
 
+    // Based on https://partner.steamgames.com/doc/store/localization#supported_languages
+    // The code assumes the names of the enum values exactly match the corresponding API language names
+    public enum SteamLanguage
+    {
+        arabic,
+        bulgarian,
+        schinese,
+        tchinese,
+        czech,
+        danish,
+        dutch,
+        english,
+        finnish,
+        french,
+        german,
+        greek,
+        hungarian,
+        italian,
+        japanese,
+        koreana,
+        norwegian,
+        polish,
+        portuguese,
+        brazilian,
+        romanian,
+        russian,
+        spanish,
+        latam,
+        swedish,
+        thai,
+        turkish,
+        ukrainian,
+        vietnamese
+    }
+
+    public interface ISteamMetadataDownloadConfig
+    {
+        bool DownloadVerticalCovers { get; }
+
+        BackgroundSource BackgroundSource { get; }
+
+        SteamLanguage MetadataDescriptionLanguage { get; }
+
+        SteamLanguage MetadataOtherLanguage { get; }
+    }
+
     public class MetadataProvider
     {
         private ILogger logger = LogManager.GetLogger();
@@ -104,9 +150,9 @@ namespace Steam
             return Convert.ToInt32(score * 100);
         }
 
-        internal StoreAppDetailsResult.AppDetails GetStoreData(uint appId)
+        internal StoreAppDetailsResult.AppDetails GetStoreData(uint appId, SteamLanguage language)
         {
-            return SendDelayedStoreRequest(() => WebApiClient.GetStoreAppDetail(appId), appId);
+            return SendDelayedStoreRequest(() => WebApiClient.GetStoreAppDetail(appId, language), appId);
         }
 
         internal AppReviewsResult.QuerySummary GetUserReviewsData(uint appId)
@@ -122,10 +168,7 @@ namespace Steam
             }
         }
 
-        internal SteamGameMetadata DownloadGameMetadata(
-            uint appId,
-            BackgroundSource backgroundSource,
-            bool downloadVerticalCovers)
+        internal SteamGameMetadata DownloadGameMetadata(uint appId, ISteamMetadataDownloadConfig cfg)
         {
             var metadata = new SteamGameMetadata();
             var productInfo = GetAppInfo(appId);
@@ -133,7 +176,14 @@ namespace Steam
 
             try
             {
-                metadata.StoreDetails = GetStoreData(appId);
+                metadata.StoreDetails = GetStoreData(appId, cfg.MetadataOtherLanguage);
+                if (cfg.MetadataDescriptionLanguage != cfg.MetadataOtherLanguage)
+                {
+                    var storeDetailsInDescriptionLanguage = GetStoreData(appId, cfg.MetadataDescriptionLanguage);
+                    metadata.StoreDetails.short_description = storeDetailsInDescriptionLanguage.short_description;
+                    metadata.StoreDetails.detailed_description = storeDetailsInDescriptionLanguage.detailed_description;
+                    metadata.StoreDetails.about_the_game = storeDetailsInDescriptionLanguage.about_the_game;
+                }
             }
             catch (Exception e)
             {
@@ -178,7 +228,7 @@ namespace Steam
 
             // Image
             var useBanner = false;
-            if (downloadVerticalCovers)
+            if (cfg.DownloadVerticalCovers)
             {
                 var imageRoot = @"https://steamcdn-a.akamaihd.net/steam/apps/{0}/library_600x900_2x.jpg";
                 var imageUrl = string.Format(imageRoot, appId);
@@ -192,7 +242,7 @@ namespace Steam
                 }
             }
 
-            if (useBanner || !downloadVerticalCovers)
+            if (useBanner || !cfg.DownloadVerticalCovers)
             {
                 var imageRoot = @"https://steamcdn-a.akamaihd.net/steam/apps/{0}/header.jpg";
                 var imageUrl = string.Format(imageRoot, appId);
@@ -220,7 +270,7 @@ namespace Steam
             var bannerBk = string.Format(@"https://steamcdn-a.akamaihd.net/steam/apps/{0}/library_hero.jpg", appId);
             var storeBk = string.Format(@"https://steamcdn-a.akamaihd.net/steam/apps/{0}/page_bg_generated_v6b.jpg", appId);
 
-            switch (backgroundSource)
+            switch (cfg.BackgroundSource)
             {
                 case BackgroundSource.Image:
                     var bk = GetGameBackground(appId);
@@ -266,12 +316,9 @@ namespace Steam
             return description.Replace("%CDN_HOST_MEDIA_SSL%", "steamcdn-a.akamaihd.net");
         }
 
-        public SteamGameMetadata GetGameMetadata(
-            uint appId,
-            BackgroundSource backgroundSource,
-            bool downloadVerticalCovers)
+        public SteamGameMetadata GetGameMetadata(uint appId, ISteamMetadataDownloadConfig cfg)
         {
-            var downloadedMetadata = DownloadGameMetadata(appId, backgroundSource, downloadVerticalCovers);
+            var downloadedMetadata = DownloadGameMetadata(appId, cfg);
             var gameInfo = new GameInfo
             {
                 Name = downloadedMetadata.ProductDetails?["common"]["name"]?.Value ?? downloadedMetadata.StoreDetails?.name,

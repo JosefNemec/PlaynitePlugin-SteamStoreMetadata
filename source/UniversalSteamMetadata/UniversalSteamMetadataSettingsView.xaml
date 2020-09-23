@@ -15,6 +15,12 @@
                 <x:Type TypeName="steam:BackgroundSource" />
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
+        <ObjectDataProvider MethodName="GetValues" ObjectType="{x:Type sys:Enum}"
+                            x:Key="SteamLanguageEnumValues">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="steam:SteamLanguage" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
     </UserControl.Resources>
 
     <StackPanel Margin="20">
@@ -27,5 +33,19 @@
                   Width="150" HorizontalAlignment="Left"
                   SelectedValue="{Binding BackgroundSource}"
                   ItemsSource="{Binding Source={StaticResource BackgroundSourceEnumValues}}" />
+
+        <TextBlock Text="Preferred game description language:" VerticalAlignment="Center" Margin="0,10,0,10" />
+
+        <ComboBox Margin="0,0,0,10"
+                  Width="150" HorizontalAlignment="Left"
+                  SelectedValue="{Binding MetadataDescriptionLanguage}"
+                  ItemsSource="{Binding Source={StaticResource SteamLanguageEnumValues}}" />
+
+        <TextBlock Text="Preferred general metadata language:" VerticalAlignment="Center" Margin="0,10,0,10" />
+
+        <ComboBox Margin="0,0,0,10"
+                  Width="150" HorizontalAlignment="Left"
+                  SelectedValue="{Binding MetadataOtherLanguage}"
+                  ItemsSource="{Binding Source={StaticResource SteamLanguageEnumValues}}" />
     </StackPanel>
 </UserControl>

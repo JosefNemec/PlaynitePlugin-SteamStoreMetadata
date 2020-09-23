@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace UniversalSteamMetadata
 {
-    public class UniversalSteamMetadataSettings : ISettings
+    public class UniversalSteamMetadataSettings : ISettings, ISteamMetadataDownloadConfig
     {
         private readonly UniversalSteamMetadata plugin;
         private UniversalSteamMetadataSettings editingClone;
@@ -17,6 +17,10 @@ namespace UniversalSteamMetadata
         public bool DownloadVerticalCovers { get; set; } = true;
 
         public BackgroundSource BackgroundSource { get; set; } = BackgroundSource.Image;
+
+        public SteamLanguage MetadataDescriptionLanguage { get; set; } = SteamLanguage.english;
+
+        public SteamLanguage MetadataOtherLanguage { get; set; } = SteamLanguage.english;
 
         public UniversalSteamMetadataSettings()
         {
@@ -31,6 +35,8 @@ namespace UniversalSteamMetadata
             {
                 DownloadVerticalCovers = savedSettings.DownloadVerticalCovers;
                 BackgroundSource = savedSettings.BackgroundSource;
+                MetadataDescriptionLanguage = savedSettings.MetadataDescriptionLanguage;
+                MetadataOtherLanguage = savedSettings.MetadataOtherLanguage;
             }
         }
 
